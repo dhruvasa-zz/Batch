@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
+<log4j:configuration>
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{E MMM dd HH:mm:ss yyyy} %c %-4p %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="appFileAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="file" value="/tmp/batch.log"/>
+        <!--  Rollover at the top of every hour. -->
+        <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mmz}|%m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="ASYNC" class="org.apache.log4j.AsyncAppender">
+        <param name="BufferSize" value="500"/>
+        <appender-ref ref="appFileAppender"/>
+    </appender>
+
+    <logger name="app" additivity="false">
+        <level value="debug"/>
+        <appender-ref ref="ASYNC"/>
+    </logger>
+
+    <root>
+        <level value="debug"/>
+        <appender-ref ref="appFileAppender"/>
+    </root>
+</log4j:configuration>

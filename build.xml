@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<project name="batch" default="all">
+
+    <property name="vm.size" value="1072m"/>
+    <property name="log4j.configuration" value="log4j.xml"/>
+    <property name="src.dir" value="src"/>
+    <property name="test.dir" value="test"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="config.dir" value="config/dev"/>
+    <property name="version" value="1.0"/>
+    <property name="config.server" value="server.properties"/>
+    <property name="resources.dir" value="resources"/>
+
+    <target name="init">
+        <mkdir dir="build/classes"/>
+        <mkdir dir="deploy/lib"/>
+    </target>
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+        <pathelement path="${config.dir}"/>
+        <fileset dir="${resources.dir}" includes="font/*.ttf"/>
+    </path>
+
+    <target name="compile" depends="init">
+        <javac debug="on" srcdir="${src.dir}" destdir="build/classes" encoding="utf-8">
+            <classpath>
+                <path refid="classpath"/>
+            </classpath>
+        </javac>
+
+    </target>
+
+    <target name="compress" depends="compile">
+        <jar destfile="deploy/${ant.project.name}.jar" basedir="build/classes">
+        </jar>
+    </target>
+
+    <target name="deploy" depends="compress">
+        <copy file="build.xml" tofile="deploy/build.xml"/>
+        <copy todir="deploy/config">
+            <fileset dir="config"/>
+        </copy>
+        <copy todir="deploy/lib">
+            <fileset dir="lib"/>
+        </copy>
+    </target>
+
+    <target name="run" depends="deploy">
+        <java fork="true" classname="com.bsb.portal.batch.BootStrap"
+              maxmemory="${vm.size}" dir=".">
+            <jvmarg value="-Dcom.sun.management.jmxremote.ssl=false"/>
+            <jvmarg value="-Dprops.file=${config.server}"/>
+            <jvmarg value="-Dlog4j.configuration=${log4j.configuration}"/>
+            <jvmarg value="-Dlog4j.debug"/>
+            <jvmarg value="-Dfile.encoding=UTF-8"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005" />
+            <classpath>
+                <path refid="classpath"/>
+                <path location="deploy/${ant.project.name}.jar"/>
+            </classpath>
+            <classpath path="${config.dir}"></classpath>
+
+        </java>
+        <echo message="runserver Classpath: ${toString:classpath}"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="build"/>
+        <delete dir="deploy"/>
+    </target>
+
+    <target name="all" depends="clean,deploy">
+    </target>
+
+</project>
